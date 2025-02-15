@@ -1,4 +1,55 @@
 - Extract the code in the setTimeout function and replace the setTimeout function  with the extracted code. Then run the main script. 
+
+    After extracting the code from the setTimeout function and replacing it directly in the promise executor, 
+    the summation logic runs immediately when the promise is created. This ensures that the promise resolves or 
+    rejects as soon as the summation process is complete, without any artificial delay caused by setTimeout.
+
 - Is there a difference in the flow of execution from when the code was in the setTimeout function?
+
+    Yes, there is a difference. When using 'setTimeout', even with a delay of '0ms', it schedules the callback as a 
+    macrotask in the event loop. This means its execution is delayed until all synchronous code and microtasks 
+    (like '.then()' callbacks) have been completed. Without 'setTimeout', the promise executor runs synchronously, 
+    so the summation logic executes immediately without being deferred.
+
 - Is the flow of execution in both these examples different from the flow of execution with the examples using the fetch() API, which also returns a promise? 
+
+    Yes, there is a difference between these examples and those using the fetch() API.
+
 - If yes, explain the code execution difference. Add your explanation to this file.
+
+    The difference lies in how tasks are scheduled and executed in JavaScript's event loop:
+         - Without setTimeout: The summation logic executes synchronously inside the promise executor. The promise 
+           resolves or rejects immediately after processing, without adding any tasks to the event loop.
+         - With setTimeout: The callback is scheduled as a macrotask in the event loop. This introduces a delay 
+           because macrotasks are executed only after all synchronous code and microtasks (like .then() callbacks) 
+           have been processed.
+         - With fetch() API: The fetch() API performs an asynchronous network request, and its resolution is 
+           scheduled as a microtask. Microtasks have higher priority than macrotasks, so they execute before any pending 
+           macrotasks.
+
+    Here’s an example to illustrate how synchronous code, microtasks, and macrotasks are prioritized:
+
+    ```
+    Promise.resolve().then(() => console.log("Microtask"));
+    setTimeout(() => console.log("Macrotask"), 0);
+    console.log("Synchronous");
+    ```
+
+    Output would be
+    ```
+    Synchronous
+    Microtask
+    Macrotask
+    ```
+
+    Explanation:
+         - "Synchronous" is logged first because it’s regular synchronous code.
+         - "Microtask" is logged next because promises are resolved as microtasks.
+         - "Macrotask" is logged last because setTimeout schedules its callback as a macrotask.
+
+    Key Takeaways:
+         - Removing unnecessary use of setTimeout ensures that promises resolve or reject immediately 
+           based on their logic.
+         - Microtasks (like promises) have higher priority than macrotasks (like setTimeout), which impacts 
+           how asynchronous workflows are executed.
+         - Understanding these differences helps design more efficient and predictable asynchronous code.
